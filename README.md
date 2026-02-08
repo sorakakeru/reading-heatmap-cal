@@ -2,8 +2,12 @@
 
 日々読んだ本のページ数をヒートマップカレンダーとして記録する
 
+## 使用ライブラリ
+
+- [Cal-Heatmap](https://cal-heatmap.com) (MIT License)
+- [Twig](https://twig.symfony.com) (BSD-3-Clause License)
+- [PHP dotenv](https://github.com/vlucas/phpdotenv) (BSD-3-Clause License)
+
 ## ライセンス
 
-本スクリプトはMITライセンスのもとで開発しています。詳細はLICENSEをご覧ください。
-
-なお、本スクリプトではテンプレートエンジンにTwigを利用しています。Twigのライセンスは3条項 BSDライセンス（BSD-3-Clause License）のもとで開発されています。詳細はLICENSE_TWIGをご覧ください。
+MIT License

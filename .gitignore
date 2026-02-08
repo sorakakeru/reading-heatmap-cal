@@ -1,3 +1,5 @@
 .DS_Store
 
+src/.env
+src/.htaccess
 src/_modules/vendor
