@@ -26,26 +26,24 @@
     <div id="cal-heatmap"></div>
   </div>
 
-  {% if error %}
-    <ul class="error">
-      {% for msg in error %}
-        <li>{{ msg }}</li>
-      {% endfor %}
-    </ul>
-  {% endif %}
-
     <div class="form_area">
+
+      {% if error %}
+        {% for msg in error %}
+          <p class="msg error">{{ msg }}</p>
+        {% endfor %}
+      {% endif %}
 
       {% if isAdmin %}
 
         {% if sendSuccess %}
-          <p class="success">入力完了！</p>
+          <p class="msg success">入力完了！</p>
         {% endif %}
 
         <form action="" method="post" id="dataForm">
           <input type="hidden" name="token" value="{{ token }}">
           <dl>
-            <dt>reading page total number...</dt>
+            <dt>reading total number of pages...</dt>
             <dd><input type="text" name="number"></dd>
           </dl>
 

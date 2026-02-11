@@ -1,120 +1,114 @@
 /**
+ * reading-heatmap-cal
+ * https://github.com/sorakakeru/reading-heatmap-cal
+ * 
+ * Copyright (c) 2026 Yamatsu
+ * Released under the MIT license
+ * https://github.com/sorakakeru/reading-heatmap-cal/blob/main/LICENSE
+ */
+
+/**
  * Cal-Heatmap
  * @see https://cal-heatmap.com
  */
-const cal = new CalHeatmap();
-cal.paint(
-  {
-    itemSelector: document.getElementById('cal-heatmap'),
-    domain: {
-      type: 'month',
-      gutter: 3,
-      sort: 'asc',
-      label: {
-        text: 'YY年M月', 
-        textAlign: 'start', 
-        position: 'top'
-      }
-    },
-    subDomain: {
-      type:'ghDay',
-      width:14,
-      height:14,
-      radius:2,
-      label:null
-    },
-    date: {
-      start: new Date('2026-02-01')
-    },
-    data: {
-      source: 'log.json',
-      x: 'date',
-      y: 'count'
-    },
-    scale: {
-      color: {
-        range: ['#ededed', '#eaf4e6', '#dae5cf', '#c8d4b7', '#b7c5a0', '#a6b58a', '#94a676', '#819863', '#6f8b53', '#5b8045', '#44753a'],
-        type: 'threshold',
-        domain: [1, 25, 50, 75, 100, 200, 300, 400, 500, 600, 700]
-      }
+
+const logfile = 'log.json';
+
+//Cal-Heatmapオプション
+const calOptions = {
+  itemSelector: document.getElementById('cal-heatmap'),
+  domain: {
+    type: 'month',
+    gutter: 3,
+    sort: 'asc',
+    label: {
+      text: 'YY年M月',
+      textAlign: 'start',
+      position: 'top'
     }
   },
-  [[Tooltip, {
+  subDomain: {
+    type: 'ghDay',
+    width: 14,
+    height: 14,
+    radius: 2,
+    label: null
+  },
+  date: {
+    start: new Date('2026-02-01')
+  },
+  data: {
+    source: logfile,
+    x: 'date',
+    y: 'count'
+  },
+  scale: {
+    color: {
+      range: ['#ededed', '#eaf4e6', '#dae5cf', '#c8d4b7', '#b7c5a0', '#a6b58a', '#94a676', '#819863', '#6f8b53', '#5b8045', '#44753a'],
+      type: 'threshold',
+      domain: [1, 25, 50, 75, 100, 200, 300, 400, 500, 600, 700]
+    }
+  }
+};
+
+const calTooltip = [
+  [Tooltip, {
     enabled: true,
     text: (_, value, dayjsDate) => {
       return `${value ?? 0}ページ ${dayjs(dayjsDate).format('YYYY/MM/DD')}`;
     }
-  }]]
-);
+  }]
+];
+
+const cal = new CalHeatmap();
+cal.paint(calOptions, calTooltip);
+
 
 /**
- * 入力フォームバリデーションチェック
+ * フォーム送信処理
  */
-/*
-//1行＆複数行テキストエリア
-function validateInput(elm, type) {
-  const dd = elm.closest('dd')
-  const required = dd.previousElementSibling.querySelector('.required')
-  const countElm = dd.querySelector('.count span')
-  const value = elm.value
-  let error = ''
 
-  if (required && value.length === 0) error = '入力必須項目です'
+//フォーム送信処理
+const form = document.querySelector('.form_area form');
+form.addEventListener('submit', async (e) => {
 
-  if (countElm) {
-    const maxCount = parseInt(countElm.dataset.maxcount, 10) || parseInt(countElm.textContent, 10)
-    if (maxCount && value.length > maxCount) error = '送信できる文字数を超えています'
-  }
-
-  if (error) {
-    dd.insertAdjacentHTML('beforeend', `<p class="error">${error}</p>`)
-    return false
-  }
-  return true
-}
-
-//チェックボックス＆ラジオボタン
-function validateChoice(elm, type) {
-  const dd = elm.closest('dd')
-  const required = dd.previousElementSibling.querySelector('.required')
-  const checked = elm.querySelectorAll(`input[type="${type}"]:checked`)
-  let error = ''
-
-  if (required && checked.length === 0) {
-    error = type === 'radio' ? '1つ選択してください' : '1つ以上選択してください'
-    dd.insertAdjacentHTML('beforeend', `<p class="error">${error}</p>`)
-    return false
-  }
-  return true
-}
-
-//送信ボタンを押した処理
-const form = document.getElementById('enqForm')
-form.addEventListener('submit', (e) => {
+  const formId = form.getAttribute('id');
 
   //error&success文言削除
-  document.querySelectorAll('.form_area p.error').forEach(function(txt) { txt.remove() })
-  document.querySelector('.success') && document.querySelector('.success').remove()
+  document.querySelectorAll('.msg').forEach(function(txt) { txt.remove() })
 
-  //ラジオボタン
-  form.querySelectorAll('dd:has(input[type="radio"])').forEach(elm => {
-    if (!validateChoice(elm, 'radio')) e.preventDefault()
-  })
+  //バリデーションチェック
+  const dd = form.querySelector('dd');
+  const inputText = dd.querySelector('input').value;
+  if (inputText.length === 0) {
+    e.preventDefault();
+    dd.insertAdjacentHTML('afterbegin', `<p class="msg error">入力必須項目です</p>`);
+  }
 
-  //チェックボックス
-  form.querySelectorAll('dd:has(input[type="checkbox"])').forEach(elm => {
-    if (!validateChoice(elm, 'checkbox')) e.preventDefault()
-  })
+  if (formId === 'dataForm') { //ページ入力の場合
+    const num = Number(inputText);
+    if (Number.isNaN(num) || !Number.isInteger(num)) {
+      e.preventDefault();
+      dd.insertAdjacentHTML('afterbegin', `<p class="msg error">整数値を入力してください</p>`);
+    }
 
-  //テキスト（1行）
-  form.querySelectorAll('dd input[type="text"]').forEach(elm => {
-    if (!validateInput(elm, 'text')) e.preventDefault()
-  })
+    //フォームデータ送信
+    const errText = document.querySelectorAll('.msg.error');
+    if (!errText) {
+      calOptions.data.source = `${logfile}?t=${Date.now()}`;
+      const response = await fetch(form.action, {
+        method: 'POST',
+        body: formData,
+      });
 
-  //テキストエリア（複数行）
-  form.querySelectorAll('dd textarea').forEach(elm => {
-    if (!validateInput(elm, 'textarea')) e.preventDefault()
-  })
+      if (response.ok) {
+        //送信成功時、Cal-Heatmapを再描画
+        const cal = new CalHeatmap();
+        cal.paint(calOptions, calTooltip);
+      } else {
+        alert('数値の送信に失敗しました');
+      }
+    }
+  }
 
-})
-*/
+});

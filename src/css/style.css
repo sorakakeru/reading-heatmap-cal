@@ -106,12 +106,34 @@ h1 {
   }
 }
 
+.success {
+  padding: 1em 0.5em;
+  color: var(--whiteColor);
+  font-weight: 700;
+  text-align: center;
+  background-color: var(--primaryColor);
+  width: 100%;
+  position: fixed;
+  top: 0;
+  left: 0;
+  opacity: 0;
+  animation: 3s fadeOut;
+  pointer-events: none;
+}
+
+@keyframes fadeOut {
+  from { opacity: 1; }
+  to { opacity: 0; }
+}
+
 .error {
   color: var(--attentionColor);
   font-weight: 700;
 }
-ul.error {
-  margin: 0 0 1.5em 1.5em;
+
+.form_area > .error {
+  margin: 0 auto 1.5em;
+  width: min(100%, 500px);
 }
 
 

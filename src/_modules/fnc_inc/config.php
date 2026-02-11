@@ -3,7 +3,7 @@
    * reading-heatmap-cal
    * https://github.com/sorakakeru/reading-heatmap-cal
    * 
-   * Copyright (c) 2025 Yamatsu
+   * Copyright (c) 2026 Yamatsu
    * Released under the MIT license
    * https://github.com/sorakakeru/reading-heatmap-cal/blob/main/LICENSE
    * 

@@ -3,7 +3,7 @@
    * reading-heatmap-cal
    * https://github.com/sorakakeru/reading-heatmap-cal
    * 
-   * Copyright (c) 2025 Yamatsu
+   * Copyright (c) 2026 Yamatsu
    * Released under the MIT license
    * https://github.com/sorakakeru/reading-heatmap-cal/blob/main/LICENSE
    * 
@@ -58,7 +58,7 @@
       $error[] = '不正な操作を検出したためログインできませんでした';
     } else {
 
-      //パスワードの整合性チェック
+      //パスワードの整合性チェック（PWはハッシュ化されている必要がある）
       $pw = $_POST['password'] ?? '';
       if (!password_verify($pw, $_ENV['ADMIN_PW'])) {
         $error[] = 'ログインパスワードが一致しませんでした';
@@ -91,59 +91,29 @@
         $error[] = 'ログファイルが存在しません';
       } else {
 
-        //jsonファイル読み込み
-        $data = loadDatas($log_file);
+        //バリデーションチェック
+        $error = array_merge($error, validatePageNumber($_POST['number'] ?? ''));
 
-        //日付
-        date_default_timezone_set('Asia/Tokyo');
-        $date = date('Y-m-d');
+        if (empty($error)) {
+          //jsonファイル読み込み
+          $data = loadDatas($log_file);
 
-        //カウント
-        $count = isset($_POST['number']) && is_numeric($_POST['number']) ? (int)$_POST['number'] : 0;
+          //日付
+          date_default_timezone_set('Asia/Tokyo');
+          $date = date('Y-m-d');
 
-        //日付の空きを埋める処理
-        if (!empty($data)) {
-          //最後のログの日付
-          $lastDate = $data[count($data) - 1]['date'];
-          $lastDateObj = new DateTime($lastDate);
-          $currentDateObj = new DateTime($date);
+          //カウント
+          $count = isset($_POST['number']) && is_numeric($_POST['number']) ? (int)$_POST['number'] : 0;
 
-          //日付差分
-          $diff = $lastDateObj->diff($currentDateObj)->days;
+          //データ追加処理
+          $data = addPageCount($data, $date, $count);
 
-          //1日以上空いていたら
-          if ($diff > 1) {
-            for ($i = 1; $i < $diff; $i++) {
-              $gapDate = $lastDateObj->modify('+1 day')->format('Y-m-d');
-              $data[] = [
-                'date' => $gapDate,
-                'count' => 0
-              ];
-            }
+          //ファイル書き込み
+          $sendSuccess = file_put_contents($log_file, json_encode($data, JSON_UNESCAPED_UNICODE), LOCK_EX) !== false;
+          if ($sendSuccess) {
+            session_regenerate_id(true);
           }
         }
-
-        //データの存在チェック＆加算処理
-        $found = false;
-        foreach ($data as &$item) {
-          if ($item['date'] === $date) {
-            $item['count'] += $count;
-            $found = true;
-            break;
-          }
-        }
-        unset($item);
-
-        // 同じ日付がなければ新規追加
-        if (!$found) {
-          $data[] = [
-            'date' => $date,
-            'count' => $count
-          ];
-        }
-
-        //ファイル書き込み
-        $sendSuccess = file_put_contents($log_file, json_encode($data, JSON_UNESCAPED_UNICODE), LOCK_EX) !== false;
 
       }
 
