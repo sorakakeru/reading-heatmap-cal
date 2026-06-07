@@ -81,7 +81,9 @@
 
     //tokenチェック
     if (!$validateToken) {
-      $error[] = '不正な操作を検出したためログインできませんでした';
+      $error[] = '不正な操作を検出したため処理できませんでした';
+    } elseif (!$isAdmin) {
+      $error[] = 'ページ数を記録する権限がありません';
     } else {
 
       //ファイルの存在チェック
@@ -95,24 +97,27 @@
         $error = array_merge($error, validatePageNumber($_POST['number'] ?? ''));
 
         if (empty($error)) {
-          //jsonファイル読み込み
-          $data = loadDatas($log_file);
-
           //日付
           date_default_timezone_set('Asia/Tokyo');
           $date = date('Y-m-d');
 
           //カウント
-          $count = isset($_POST['number']) && is_numeric($_POST['number']) ? (int)$_POST['number'] : 0;
+          $count = (int) trim((string) ($_POST['number'] ?? '0'));
 
           //データ追加処理
-          $data = addPageCount($data, $date, $count);
-
-          //ファイル書き込み
-          $sendSuccess = file_put_contents($log_file, json_encode($data, JSON_UNESCAPED_UNICODE), LOCK_EX) !== false;
+          $sendSuccess = updateLogData($log_file, function($data) use ($date, $count) {
+            return addPageCount($data, $date, $count);
+          });
           if ($sendSuccess) {
             session_regenerate_id(true);
+            
+            //token再生成（削除の代わり）
+            $_SESSION['token'] = generateToken();
+            $token = $_SESSION['token'];
+          } else {
+            $error[] = 'ログの更新に失敗しました';
           }
+
         }
 
       }
@@ -129,4 +134,3 @@
     'sendSuccess' => $sendSuccess,
     'error' => $error
   ]);
-?>
