@@ -36,21 +36,68 @@
   }
 
   //CSRFトークン検証
-  function validateToken($token, $sessionKey = 'token') {
+  function validateToken($token) {
     //送信されてきた$tokenが生成したハッシュと一致するか
-    return isset($_SESSION[$sessionKey]) && hash_equals($_SESSION[$sessionKey], $token);
+    return isset($_SESSION['token']) && hash_equals($_SESSION['token'], $token);
   }
 
   //ページ数バリデーション
   function validatePageNumber($number) {
     $errors = [];
-    if (empty($number)) {
+    if (is_string($number)) {
+      $number = trim($number);
+    }
+
+    if ($number === '') {
       $errors[] = '入力必須項目です';
     }
-    if (!is_numeric($number)) {
+
+    if (filter_var($number, FILTER_VALIDATE_INT) === false) {
       $errors[] = '整数値を入力してください';
     }
     return $errors;
+  }
+
+  //排他制御しながらログデータを更新
+  function updateLogData($file, callable $updater) {
+    $fp = fopen($file, 'c+');
+    if ($fp === false) {
+      return false;
+    }
+
+    try {
+      if (!flock($fp, LOCK_EX)) {
+        return false;
+      }
+
+      rewind($fp);
+      $content = stream_get_contents($fp);
+      $data = $content !== false && $content !== '' ? json_decode($content, true) : [];
+      if (!is_array($data)) {
+        $data = [];
+      }
+
+      $updatedData = $updater($data);
+      $json = json_encode($updatedData, JSON_UNESCAPED_UNICODE);
+      if ($json === false) {
+        return false;
+      }
+
+      rewind($fp);
+      if (!ftruncate($fp, 0)) {
+        return false;
+      }
+
+      if (fwrite($fp, $json) === false) {
+        return false;
+      }
+
+      fflush($fp);
+      return true;
+    } finally {
+      flock($fp, LOCK_UN);
+      fclose($fp);
+    }
   }
 
   //データ追加処理
@@ -106,5 +153,3 @@
       return htmlspecialchars($str, ENT_QUOTES, 'UTF-8');
     }
   }
-
-?>
