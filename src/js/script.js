@@ -15,12 +15,11 @@
 const logfile = 'log.json';
 
 const nowDate = new Date();
-const nowDateYmd = `${nowDate.getFullYear()}-${String(nowDate.getMonth() + 1).padStart(2, '0')}-${String(nowDate.getDate()).padStart(2, '0')}`;
+const nowDateYmd = `${nowDate.getFullYear()}-${String(nowDate.getMonth() + 1).padStart(2, '0')}-01`;
 const oneYearAgoDate = new Date(`${nowDateYmd}T00:00:00`);
 oneYearAgoDate.setFullYear(oneYearAgoDate.getFullYear() - 1);
-oneYearAgoDate.setMonth(oneYearAgoDate.getMonth() + 1);
-const nowDateYmdOneYearAgo = `${oneYearAgoDate.getFullYear()}-${String(oneYearAgoDate.getMonth() + 1).padStart(2, '0')}-${String(oneYearAgoDate.getDate()).padStart(2, '0')}`;
-
+oneYearAgoDate.setMonth(oneYearAgoDate.getMonth() + 3);
+const nowDateYmdOneYearAgo = `${oneYearAgoDate.getFullYear()}-${String(oneYearAgoDate.getMonth() + 1).padStart(2, '0')}-01`;
 
 //Cal-Heatmapオプション
 const calOptions = {
