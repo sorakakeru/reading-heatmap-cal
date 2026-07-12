@@ -51,9 +51,9 @@ const calOptions = {
   },
   scale: {
     color: {
-      range: ['#ededed', '#eaf4e6', '#dae5cf', '#c8d4b7', '#b7c5a0', '#a6b58a', '#94a676', '#819863', '#6f8b53', '#5b8045', '#44753a'],
-      type: 'threshold',
-      domain: [1, 25, 50, 75, 100, 200, 300, 400, 500, 600, 700]
+      scheme: 'Greens',
+      type: 'linear',
+      domain: [0, 100]
     }
   }
 };
